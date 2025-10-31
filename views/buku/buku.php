@@ -1,85 +1,105 @@
 <?php
-// views/buku/buku.php
-
-// Pastikan koneksi tersedia. Sesuaikan path jika koneksi.php berada di folder lain.
-if (!isset($koneksi)) {
-    include_once __DIR__ . '/../../koneksi.php'; // sesuaikan level folder
-}
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+include "koneksi.php";
 ?>
 
-<div class="card">
-  <div class="card-header">
-    <h3 class="card-title">Data Buku</h3>
+<!-- ====== HEADER HALAMAN ====== -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Data Buku</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+          <li class="breadcrumb-item active">Data Buku</li>
+        </ol>
+      </div>
+    </div>
   </div>
+</section>
 
-  <div class="card-body">
-    <!-- tombol di luar table -->
-    <div class="mb-3">
-      <a href="index.php?halaman=tambahbuku" class="btn btn-primary float-right btn-sm mb-3">
-        <i class="fas fa-plus"></i> Tambah Buku
-      </a>
+<!-- ====== ISI HALAMAN ====== -->
+<section class="content">
+  <div class="card shadow-sm border-0">
+
+    <!-- Header -->
+    <div class="card-header bg-gradient-primary text-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="m-0"><i class="fas fa-book me-2"></i> Daftar Buku</h5>
+        <a href="index.php?halaman=tambahbuku" class="btn btn-light btn-sm">
+          <i class="fas fa-plus"></i> Tambah Buku
+        </a>
+      </div>
     </div>
 
-    <table id="example1" class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Buku</th>
-          <th>Judul</th>
-          <th>Kategori</th>
-          <th>Pengarang</th>
-          <th>Tahun Terbit</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php
-        // Ambil data dari tabel buku
-        $sql = "SELECT idbuku, buku, judul, kategori, pengarang, tahunterbit FROM buku ORDER BY idbuku";
-        $query = mysqli_query($koneksi, $sql);
-
-        if (!$query) {
-            echo '<tr><td colspan="7">Query error: ' . htmlspecialchars(mysqli_error($koneksi)) . '</td></tr>';
-        } else {
+    <!-- Tabel -->
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover text-sm align-middle mb-0">
+          <thead class="table-primary text-center">
+            <tr>
+              <th style="width: 40px;">No</th>
+              <th>Judul</th>
+              <th>Pengarang</th>
+              <th>Tahun Terbit</th>
+              <th>Stok</th>
+              <th>Kategori</th>
+              <th>Rak</th>
+              <th>Foto</th>
+              <th style="width: 100px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php
             $no = 1;
-            while ($data = mysqli_fetch_assoc($query)) :
-        ?>
+            $sql = mysqli_query($koneksi, "
+              SELECT b.*, k.namakategori, r.Namarak
+              FROM buku b
+              LEFT JOIN kategori k ON b.idkategori = k.idkategori
+              LEFT JOIN rak r ON b.idrak = r.idrak
+              ORDER BY b.idbuku DESC
+            ");
+
+            while ($data = mysqli_fetch_array($sql)) {
+              // Cek foto buku
+              $fotoPath = 'foto/fotobuku/' . $data['foto'];
+              $foto = (!empty($data['foto']) && file_exists($fotoPath))
+                ? "<img src='$fotoPath' width='60' height='60' class='rounded border'>"
+                : "<span class='text-muted'>Tidak ada</span>";
+
+              echo "
               <tr>
-                <td><?= $no++; ?></td>
-                <td><?= htmlspecialchars($data['buku']); ?></td>
-                <td><?= htmlspecialchars($data['judul']); ?></td>
-                <td><?= htmlspecialchars($data['kategori']); ?></td>
-                <td><?= htmlspecialchars($data['pengarang']); ?></td>
-                <td><?= htmlspecialchars($data['tahunterbit']); ?></td>
-                <td>
-                  <a href="index.php?halaman=editbuku&id=<?= htmlspecialchars($data['idbuku']); ?>" class="btn btn-warning btn-sm">
-                    <i class="fas fa-edit"></i>
+                <td class='text-center'>$no</td>
+                <td>{$data['judul']}</td>
+                <td>{$data['pengarang']}</td>
+                <td class='text-center'>{$data['tahun_terbit']}</td>
+                <td class='text-center'>{$data['stok']}</td>
+                <td>{$data['namakategori']}</td>
+                <td>{$data['Namarak']}</td>
+                <td class='text-center'>$foto</td>
+                <td class='text-center'>
+                  <a href='index.php?halaman=editbuku&idbuku={$data['idbuku']}' class='btn btn-sm btn-warning'>
+                    <i class='fa fa-edit'></i>
                   </a>
-                  <a href="hapus_buku.php?id=<?= htmlspecialchars($data['idbuku']); ?>" class="btn btn-danger btn-sm"
-                     onclick="return confirm('Yakin ingin menghapus data ini?');">
-                    <i class="fas fa-trash"></i>
+                  <a href='db/dbbuku.php?proses=hapus&idbuku={$data['idbuku']}' 
+                     class='btn btn-sm btn-danger' 
+                     onclick=\"return confirm('Yakin ingin menghapus buku ini?');\">
+                    <i class='fa fa-trash'></i>
                   </a>
                 </td>
-              </tr>
-        <?php
-            endwhile;
-        }
-        ?>
-      </tbody>
-      <tfoot>
-        <tr>
-          <th>No</th>
-          <th>Buku</th>
-          <th>Judul</th>
-          <th>Kategori</th>
-          <th>Pengarang</th>
-          <th>Tahun Terbit</th>
-          <th>Aksi</th>
-        </tr>
-      </tfoot>
-    </table>
-  </div><!-- /.card-body -->
-</div><!-- /.card -->
+              </tr>";
+              $no++;
+            }
+            ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer text-muted text-sm text-center">
+      <i class="fas fa-info-circle me-1"></i> Daftar semua buku yang tersimpan di sistem.
+    </div>
+  </div>
+</section>

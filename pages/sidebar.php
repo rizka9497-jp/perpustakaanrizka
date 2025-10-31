@@ -80,7 +80,7 @@
           <a href="#" class="nav-link">
             <i class="nav-icon fas fa-users "></i>
             <p>
-              Peminjam
+              halaman Peminjam
               <i class="right fas fa-angle-left"></i>
             </p>
           </a>
@@ -94,7 +94,7 @@
             <li class="nav-item">
               <a href="index.php?halaman=tambahpeminjam" class="nav-link ">
                 <i class="far fa-circle nav-icon"></i>
-                <p>Tambah Peminjam</p>
+                <p>tambahPeminjam</p>
               </a>
             </li>
             <li class="nav-item">
@@ -108,9 +108,38 @@
 
         <li class="nav-item menu-open">
           <a href="#" class="nav-link">
+            <i class="nav-icon fas fa-users "></i>
+            <p>
+              halaman Peminjaman
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="index.php?halaman=daftarpeminjaman" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>daftarPeminjaman</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="index.php?halaman=tambahpeminjaman" class="nav-link ">
+                <i class="far fa-circle nav-icon"></i>
+                <p>tambahPeminjaman</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="index.php?halaman=editpeminjaman" class="nav-link ">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Edit Peminjaman</p>
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item menu-open">
+          <a href="#" class="nav-link">
             <i class="nav-icon fas fa-book"></i>
             <p>
-              manajemen buku
+              halaman buku
               <i class="right fas fa-angle-left"></i>
             </p>
           </a>
@@ -130,32 +159,65 @@
             <li class="nav-item">
               <a href="index.php?halaman=editbuku" class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
-                <p>edit buku</p>
+                <p>editbuku</p>
               </a>
             </li>
           </ul>
         </li>
-
-        <li class="nav-header">LABELS</li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon far fa-circle text-danger"></i>
-            <p class="text">Important</p>
-          </a>
+      
         </li>
-        <li class="nav-item">
+        <li class="nav-item menu-open">
           <a href="#" class="nav-link">
-            <i class="nav-icon far fa-circle text-warning"></i>
-            <p>Warning</p>
+            <i class="nav-icon fas fa-tags"></i>
+            <p>
+              Kategori
+              <i class="right fas fa-angle-left"></i>
+            </p>
           </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="index.php?halaman=kategori" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Daftar Kategori</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="index.php?halaman=tambahkategori" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Tambah Kategori</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="index.php?halaman=editkategori" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Edit Kategori</p>
+              </a>
+            </li>
+          </ul>
         </li>
-        <li class="nav-item">
-          <a href="#" class="nav-link">
-            <i class="nav-icon far fa-circle text-info"></i>
-            <p>Informational</p>
-          </a>
-        </li>
+                <li class="nav-header">LABELS</li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon far fa-circle text-danger"></i>
+                        <p class="text">Important</p>
+                      </a>
+                  </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon far fa-circle text-warning"></i>
+                        <p>Warning</p>
+                      </a>
+                  </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="nav-icon far fa-circle text-info"></i>
+                        <p>Informational</p>
+                      </a>
+                  </li>
+             
       </ul>
+         
     </nav>
+     
   </div>
 </aside>

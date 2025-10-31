@@ -1,101 +1,99 @@
 <?php
-// views/peminjam/peminjam.php
-
-// Pastikan koneksi tersedia. Sesuaikan path jika koneksi.php berada di folder lain.
-if (!isset($koneksi)) {
-    // contoh path relatif: jika index.php ada di root project dan koneksi.php di root:
-    include_once __DIR__ . '/../../koneksi.php'; // sesuaikan level folder
-}
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 ?>
 
-<div class="card">
-  <div class="card-header">
-    <h3 class="card-title">Data Peminjam</h3>
+<!-- ====== HEADER HALAMAN ====== -->
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Data Peminjam</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="index.php">Home</a></li>
+          <li class="breadcrumb-item active">Data Peminjam</li>
+        </ol>
+      </div>
+    </div>
   </div>
+</section>
 
-  <div class="card-body">
-    <!-- tombol di luar table -->
-    <div class="mb-3">
-      <a href="index.php?halaman=tambahpeminjam" class="btn btn-primary float-right btn-sm mb-3">
-        <i class="fas fa-user-plus"></i> Tambah peminjam
-      </a>
+<!-- ====== ISI HALAMAN ====== -->
+<section class="content">
+  <div class="card shadow-sm border-0">
+
+    <!-- Header -->
+    <div class="card-header bg-gradient-primary text-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5 class="m-0"><i class="fas fa-users me-2"></i> Daftar Peminjam</h5>
+        <a href="index.php?halaman=tambahpeminjam" class="btn btn-light btn-sm">
+          <i class="fas fa-plus"></i> Tambah Peminjam
+        </a>
+      </div>
     </div>
 
-    <table id="example2" class="table table-bordered table-hover">
-      <thead>
-        <tr>
-          <th>Nama Peminjam</th>
-          <th>ID Peminjam</th>
-          <th>Alamat</th>
-          <th>Notelpon</th>
-          <th>Foto</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php
-        // Ambil data dari DB
-        $sql = "SELECT idpeminjam, namapeminjam, alamat, notelpon, foto FROM peminjam ORDER BY idpeminjam";
-        $res = mysqli_query($koneksi, $sql);
-        if (!$res) {
-            echo '<tr><td colspan="6">Query error: ' . htmlspecialchars(mysqli_error($koneksi)) . '</td></tr>';
-        } else {
-            while ($row = mysqli_fetch_assoc($res)) {
-                // --- tangani path foto ---
-                $foto_db = $row['foto']; // bisa berisi 'foto/rizka.jpg' atau hanya 'rizka.jpg' atau NULL
-                if (!empty($foto_db)) {
-                    // jika hanya nama file tanpa folder, tambahkan folder 'foto/'
-                    $foto_path = (strpos($foto_db, '/') !== false) ? $foto_db : 'foto/' . $foto_db;
-                    // cek apakah file fisik ada di server; gunakan DOCUMENT_ROOT untuk path server
-                    $server_file = $_SERVER['DOCUMENT_ROOT'] . '/' . ltrim($foto_path, '/');
-                    if (!file_exists($server_file)) {
-                        // fallback bila tidak ada file fisik
-                        $foto_path = 'dist/img/default-user.png'; // gambar default AdminLTE
-                    }
-                } else {
-                    // bila NULL
-                    $foto_path = 'dist/img/default-user.png';
-                }
+    <!-- Tabel -->
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover text-sm align-middle mb-0">
+          <thead class="table-primary text-center">
+            <tr>
+              <th style="width: 40px;">No</th>
+              <th>Nama Peminjam</th>
+              <th>Alamat</th>
+              <th>No. Telepon</th>
+              <th>Foto</th>
+              <th style="width: 100px;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php
+            $no = 1;
+            $sql = mysqli_query($koneksi, "SELECT * FROM peminjam ORDER BY idpeminjam DESC");
 
-                // escape output
-                $nama = htmlspecialchars($row['namapeminjam']);
-                $id   = htmlspecialchars($row['idpeminjam']);
-                $alamat = htmlspecialchars($row['alamat']);
-                $telp = htmlspecialchars($row['notelpon']);
-                $foto_url = htmlspecialchars($foto_path);
+            while ($data = mysqli_fetch_assoc($sql)) {
+              $idpeminjam = $data['idpeminjam'];
 
-                echo "<tr>";
-                echo "<td>{$nama}</td>";
-                echo "<td>{$id}</td>";
-                echo "<td>{$alamat}</td>";
-                echo "<td>{$telp}</td>";
-                echo "<td><img src=\"{$foto_url}\" alt=\"foto-{$id}\" class=\"img-thumbnail\" style=\"width:60px;height:60px;object-fit:cover;\"></td>";
-                echo "<td>
-                        <a href=\"index.php?halaman=editpeminjam&id={$id}\" class=\"btn btn-warning btn-sm\">
-                          <i class=\"fas fa-edit\"></i>
-                        </a>
-                        <a href=\"hapus_peminjam.php?id={$id}\" class=\"btn btn-danger btn-sm\" onclick=\"return confirm('Yakin ingin menghapus?')\">
-                          <i class=\"fas fa-trash\"></i>
-                        </a>
-                      </td>";
-                echo "</tr>";
+              // Ambil data aman
+              $nama   = $data['namapeminjam'] ?? $data['nama'] ?? '<i>Tidak ada</i>';
+              $alamat = $data['alamat'] ?? '<i>Tidak ada</i>';
+              $nohp   = $data['notelpon'] ?? $data['nohp'] ?? '<i>Tidak ada</i>';
+
+              // Cek foto
+              $fotoPath = 'foto/fotopeminjam/' . ($data['foto'] ?? '');
+              $foto = (!empty($data['foto']) && file_exists($fotoPath))
+                ? "<img src='$fotoPath' width='60' height='60' class='rounded border'>"
+                : "<span class='text-muted'>Tidak ada</span>";
+
+              echo "
+              <tr>
+                <td class='text-center'>$no</td>
+                <td>$nama</td>
+                <td>$alamat</td>
+                <td class='text-center'>$nohp</td>
+                <td class='text-center'>$foto</td>
+                <td class='text-center'>
+                  <a href='index.php?halaman=editpeminjam&idpeminjam=$idpeminjam' class='btn btn-sm btn-warning'>
+                    <i class='fa fa-edit'></i>
+                  </a>
+                  <a href='db/dbpeminjam.php?proses=hapus&idpeminjam=$idpeminjam' 
+                     class='btn btn-sm btn-danger' 
+                     onclick=\"return confirm('Yakin ingin menghapus data peminjam ini?');\">
+                    <i class='fa fa-trash'></i>
+                  </a>
+                </td>
+              </tr>";
+              $no++;
             }
-        }
-        ?>
-      </tbody>
-      <tfoot>
-        <tr>
-          <th>Nama Peminjam</th>
-          <th>ID Peminjam</th>
-          <th>Alamat</th>
-          <th>Notelpon</th>
-          <th>Foto</th>
-          <th>Aksi</th>
-        </tr>
-      </tfoot>
-    </table>
-  </div><!-- /.card-body -->
-</div><!-- /.card -->
+            ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer text-muted text-sm text-center">
+      <i class="fas fa-info-circle me-1"></i> Pastikan data peminjam sudah lengkap dan benar.
+    </div>
+  </div>
+</section>
