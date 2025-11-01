@@ -164,6 +164,36 @@
             </li>
           </ul>
         </li>
+         </li>
+        <li class="nav-item menu-open">
+          <a href="#" class="nav-link">
+            <i class="nav-icon fas fa-tags"></i>
+            <p>
+             rak
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="index.php?halaman=rak" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>rak</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="index.php?halaman=tambahrak" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Tambahrak</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="index.php?halaman=editrak" class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>Editrak</p>
+              </a>
+            </li>
+          </ul>
+        </li>
       
         </li>
         <li class="nav-item menu-open">

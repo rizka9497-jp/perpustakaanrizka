@@ -1,6 +1,3 @@
-<?php
-?>
-
 <!-- ====== HEADER HALAMAN ====== -->
 <section class="content-header">
   <div class="container-fluid">
@@ -20,7 +17,7 @@
         <h3 class="card-title text-white">Form Tambah Peminjaman</h3>
       </div>
 
-      <form action="../../db/dbpeminjaman.php?proses=tambah" method="POST" id="formPeminjaman">
+      <form action="db/dbpeminjaman.php?proses=tambah" method="POST" id="formPeminjaman">
         <div class="card-body">
 
           <!-- === PILIH PEMINJAM === -->
@@ -53,15 +50,15 @@
 
           <hr>
 
-          <!-- === TANGGAL DAN DENDA === -->
+          <!-- === TANGGAL DAN DENDA (hanya tampilan, tidak dikirim ke DB) === -->
           <div class="row">
             <div class="col-md-3">
               <label><strong>Tanggal Pinjam</strong></label>
-              <input type="text" name="tanggal_pinjam" id="tanggal_pinjam" class="form-control" readonly>
+              <input type="text" id="tanggal_pinjam" class="form-control" readonly>
             </div>
             <div class="col-md-3">
-              <label><strong>Tanggal Kembali (Perkiraan)</strong></label>
-              <input type="date" name="tanggal_kembali" id="tanggal_kembali" class="form-control" required>
+              <label><strong>Tanggal Kembali (Batas)</strong></label>
+              <input type="text" id="tanggal_kembali" class="form-control" readonly>
             </div>
             <div class="col-md-3">
               <label><strong>Durasi Peminjaman</strong></label>
@@ -69,7 +66,7 @@
             </div>
             <div class="col-md-3">
               <label><strong>Denda jika terlambat</strong></label>
-              <input type="text" id="denda" value="Rp 1000 / hari" class="form-control" readonly>
+              <input type="text" id="denda" value="Rp 0" class="form-control" readonly>
             </div>
           </div>
 
@@ -114,51 +111,59 @@
   </div>
 </section>
 
-<!-- ====== SCRIPT PERHITUNGAN OTOMATIS ====== -->
+<!-- ====== SCRIPT PERHITUNGAN OTOMATIS & TAMBAH/HAPUS BUKU ====== -->
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    // === Tanggal pinjam otomatis hari ini ===
-    const today = new Date();
-    const tglPinjamInput = document.getElementById('tanggal_pinjam');
-    const tglKembaliInput = document.getElementById('tanggal_kembali');
-    const durasiInput = document.getElementById('durasi');
+document.addEventListener("DOMContentLoaded", function() {
+  const today = new Date();
+  const tglPinjamInput = document.getElementById('tanggal_pinjam');
+  const tglKembaliInput = document.getElementById('tanggal_kembali');
+  const durasiInput = document.getElementById('durasi');
+  const dendaInput = document.getElementById('denda');
 
-    // Format YYYY-MM-DD
-    const todayStr = today.toISOString().split('T')[0];
-    tglPinjamInput.value = todayStr;
+  // Set tanggal pinjam hari ini
+  const todayStr = today.toISOString().split('T')[0];
+  tglPinjamInput.value = todayStr;
 
-    // === Hitung tanggal kembali otomatis (misal +7 hari) ===
-    const durasiHari = 7;
-    const tglKembali = new Date(today);
-    tglKembali.setDate(tglKembali.getDate() + durasiHari);
-    const tglKembaliStr = tglKembali.toISOString().split('T')[0];
-    tglKembaliInput.value = tglKembaliStr;
-    durasiInput.value = durasiHari + " hari";
+  // Durasi 6 hari
+  const durasiHari = 6;
+  const tglKembali = new Date(today);
+  tglKembali.setDate(tglKembali.getDate() + durasiHari);
+  tglKembaliInput.value = tglKembali.toISOString().split('T')[0];
+  durasiInput.value = durasiHari + " hari";
 
-    // Jika user ubah tanggal kembali, hitung ulang durasi
-    tglKembaliInput.addEventListener('change', function() {
-      const tglKembaliBaru = new Date(this.value);
-      const selisih = (tglKembaliBaru - today) / (1000 * 60 * 60 * 24);
-      durasiInput.value = selisih > 0 ? selisih + " hari" : "Tanggal tidak valid";
-    });
+  // Simulasi perhitungan denda
+  const inputTanggalAktual = document.createElement("input");
+  inputTanggalAktual.type = "date";
+  inputTanggalAktual.id = "tanggal_pengembalian_aktual";
+  inputTanggalAktual.classList.add("form-control", "mt-2");
+  inputTanggalAktual.placeholder = "Masukkan tanggal pengembalian aktual (simulasi)";
+  tglKembaliInput.parentNode.appendChild(inputTanggalAktual);
 
-    // === Tambah dan hapus buku ===
-    document.getElementById('btnTambahBuku').addEventListener('click', function() {
-      const daftar = document.getElementById('daftarBuku');
-      const newItem = daftar.querySelector('.buku-item').cloneNode(true);
-      newItem.querySelectorAll('input').forEach(i => i.value = '');
-      daftar.appendChild(newItem);
-    });
-
-    document.addEventListener('click', function(e) {
-      if (e.target.classList.contains('btnHapusBuku')) {
-        const allBuku = document.querySelectorAll('.buku-item');
-        if (allBuku.length > 1) {
-          e.target.closest('.buku-item').remove();
-        } else {
-          alert('Minimal satu buku harus dipinjam.');
-        }
-      }
-    });
+  inputTanggalAktual.addEventListener("change", function() {
+    const tglAktual = new Date(this.value);
+    const tglBatas = new Date(tglKembaliInput.value);
+    const selisihHari = Math.ceil((tglAktual - tglBatas) / (1000 * 60 * 60 * 24));
+    dendaInput.value = selisihHari > 0 ? "Rp " + (selisihHari * 1000).toLocaleString("id-ID") : "Rp 0";
   });
+
+  // Tambah & hapus buku
+  document.getElementById('btnTambahBuku').addEventListener('click', function() {
+    const daftar = document.getElementById('daftarBuku');
+    const newItem = daftar.querySelector('.buku-item').cloneNode(true);
+    newItem.querySelectorAll('input').forEach(i => i.value = '');
+    newItem.querySelector('select').selectedIndex = 0;
+    daftar.appendChild(newItem);
+  });
+
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('btnHapusBuku')) {
+      const allBuku = document.querySelectorAll('.buku-item');
+      if (allBuku.length > 1) {
+        e.target.closest('.buku-item').remove();
+      } else {
+        alert('Minimal satu buku harus dipinjam.');
+      }
+    }
+  });
+});
 </script>

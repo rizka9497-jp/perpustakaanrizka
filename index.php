@@ -122,6 +122,17 @@ $query = mysqli_query($koneksi, "SELECT * FROM buku ");
                   include("views/kategori/editkategori.php");
                   break;
 
+                    case "rak":
+                  include("views/rak/rak.php");
+                  break;
+                case "tambahrak":
+                  include("views/rak/tambahrak.php");
+                  break;
+                  case "editrak":
+                  include("views/rak/editrak.php");
+                  break;
+                
+
                 // -------------------------------
                 // Halaman UMUM
                 // -------------------------------
