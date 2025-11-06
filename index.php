@@ -80,8 +80,8 @@ $query = mysqli_query($koneksi, "SELECT * FROM buku ");
                 case "editpeminjaman":
                   include("views/peminjaman/editpeminjaman.php");
                   break;
-                  case "prosespeminjaman":
-                  include("views/peminjaman/prosespeminjaman.php");
+                  case "prosespengembalian":
+                  include("views/peminjaman/prosespengembalian.php");
                   break;
                    case "daftarpengembalian.php":
                   include("views/peminjaman/daftarpengembalian.php");

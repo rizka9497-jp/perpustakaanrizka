@@ -47,7 +47,7 @@
             <img src="<?= $fotoAdmin; ?>" alt="Foto Admin"
                  class="img-thumbnail border"
                  style="width:120px; height:120px; object-fit:cover;">
-          </div>
+    
           <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
           <small class="text-muted">Kosongkan jika tidak ingin mengganti foto.</small>
         </div>

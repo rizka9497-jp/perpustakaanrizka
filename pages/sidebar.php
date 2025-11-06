@@ -122,17 +122,18 @@
               </a>
             </li>
             <li class="nav-item">
-              <a href="index.php?halaman=tambahpeminjaman" class="nav-link ">
+              <a href="index.php?halaman=editpeminjaman" class="nav-link ">
                 <i class="far fa-circle nav-icon"></i>
-                <p>tambahPeminjaman</p>
+                <p>editpeminjaman</p>
               </a>
             </li>
             <li class="nav-item">
-              <a href="index.php?halaman=editpeminjaman" class="nav-link ">
+              <a href="index.php?halaman=daftarpengembalian" class="nav-link ">
                 <i class="far fa-circle nav-icon"></i>
-                <p>Edit Peminjaman</p>
+                <p>daftarpengembalian</p>
               </a>
             </li>
+          
           </ul>
         </li>
         <li class="nav-item menu-open">

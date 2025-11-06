@@ -1,165 +1,158 @@
 <?php
-// PASTIKAN BARIS INI ADALAH BARIS PERTAMA.
-// TIDAK ADA SPASI ATAU BARIS KOSONG DI ATASNYA.
+include "../koneksi.php";
+session_start();
 
-// =======================================================
-// 1. Inisialisasi Sesi dan Koneksi
-// =======================================================
-if (session_status() == PHP_SESSION_NONE) {
-   
-}
-
-// Ambil ID Peminjaman dari POST
-$idpeminjaman = $_POST['idpeminjaman'] ?? '';
-
-if (empty($idpeminjaman)) {
-    $_SESSION['pesan_error'] = "ID Peminjaman tidak ditemukan untuk diedit.";
-    header("Location: index.php?halaman=peminjaman");
+// Pastikan ada ID peminjaman yang dikirim
+if (!isset($_GET['idpeminjaman'])) {
+    echo "<script>alert('ID peminjaman tidak ditemukan!'); window.location='../index.php?halaman=daftarpeminjaman';</script>";
     exit;
 }
 
-// Koneksi ke database
-$koneksiPath = __DIR__ . '/../../koneksi.php'; 
-if (!file_exists($koneksiPath)) {
-    die("Koneksi database tidak ditemukan: " . $koneksiPath);
-}
-require_once $koneksiPath;
+$idpeminjaman = intval($_GET['idpeminjaman']);
 
-// Pastikan variabel $koneksi tersedia
-if (!isset($koneksi) || !$koneksi || $koneksi->connect_error) {
-     die("Koneksi database gagal setelah require: " . mysqli_connect_error());
-}
+// Ambil data peminjaman utama
+$qPeminjaman = mysqli_query($koneksi, "
+    SELECT * FROM peminjaman WHERE idpeminjaman='$idpeminjaman'
+");
+$data = mysqli_fetch_assoc($qPeminjaman);
 
+// Ambil data peminjam dan buku untuk dropdown
+$peminjam = mysqli_query($koneksi, "SELECT * FROM peminjam ORDER BY namapeminjam ASC");
+$buku = mysqli_query($koneksi, "SELECT * FROM buku ORDER BY judulbuku ASC");
 
-// =======================================================
-// 2. Ambil Data Peminjaman saat ini
-// =======================================================
-try {
-    $stmt_data = $koneksi->prepare("
-        SELECT p.*, pm.namapeminjam, a.nama AS namaadmin
-        FROM peminjaman p
-        LEFT JOIN peminjam pm ON p.idpeminjam = pm.idpeminjam
-        LEFT JOIN admin a ON p.idadmin = a.idadmin
-        WHERE p.idpeminjaman = ?
-    ");
-    $stmt_data->bind_param("s", $idpeminjaman);
-    $stmt_data->execute();
-    $result_data = $stmt_data->get_result();
-
-    if ($result_data->num_rows === 0) {
-        $_SESSION['pesan_error'] = "Data peminjaman dengan ID " . htmlspecialchars($idpeminjaman) . " tidak ditemukan.";
-        header("Location: index.php?halaman=datapeminjaman");
-        exit;
-    }
-    $data = $result_data->fetch_assoc();
-    $stmt_data->close();
-} catch (Exception $e) {
-    $_SESSION['pesan_error'] = "Error mengambil data: " . $e->getMessage();
-    header("Location: index.php?halaman=datapeminjaman");
-    exit;
-}
-
-
-// =======================================================
-// 3. Ambil List Peminjam dan Admin untuk Dropdown (SELECT)
-// =======================================================
-// Menggunakan mysqli_query biasa (tidak memerlukan prepared statement karena tidak ada input user)
-$sql_peminjam = "SELECT idpeminjam, namapeminjam FROM peminjam ORDER BY namapeminjam";
-$res_peminjam = mysqli_query($koneksi, $sql_peminjam);
-
-$sql_admin = "SELECT idadmin, nama FROM admin ORDER BY nama";
-$res_admin = mysqli_query($koneksi, $sql_admin);
-
+// Ambil detail buku yang dipinjam
+$detail = mysqli_query($koneksi, "
+    SELECT dp.*, b.judulbuku 
+    FROM detailpeminjaman dp
+    JOIN buku b ON dp.idbuku = b.idbuku
+    WHERE dp.idpeminjaman='$idpeminjaman'
+");
 ?>
 
 <section class="content-header">
-    <div class="container-fluid">
-        <div class="row mb-2">
-            <div class="col-sm-12">
-                <h1><?php echo htmlspecialchars($idpeminjaman); ?>)</h1>
-            </div>
-        </div>
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>Edit Peminjaman</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="../index.php">Home</a></li>
+          <li class="breadcrumb-item"><a href="../index.php?halaman=daftarpeminjaman">Daftar Peminjaman</a></li>
+          <li class="breadcrumb-item active">Edit</li>
+        </ol>
+      </div>
     </div>
+  </div>
 </section>
 
 <section class="content">
-    <div class="card card-warning shadow-sm">
-        <div class="card-header">
-            <h3 class="card-title">Formulir Edit Data</h3>
+<div class="container-fluid">
+  <form action="../db/dbpeminjaman.php?proses=update" method="POST">
+    <input type="hidden" name="idpeminjaman" value="<?= $data['idpeminjaman'] ?>">
+
+    <div class="card">
+      <div class="card-header bg-primary text-white">
+        <h3 class="card-title">Informasi Peminjaman</h3>
+      </div>
+      <div class="card-body">
+
+        <div class="form-group">
+          <label>Nama Peminjam</label>
+          <select name="idpeminjam" class="form-control" required>
+            <option value="">-- Pilih Peminjam --</option>
+            <?php while ($pm = mysqli_fetch_assoc($peminjam)) { ?>
+              <option value="<?= $pm['idpeminjam'] ?>" 
+                <?= ($pm['idpeminjam'] == $data['idpeminjam']) ? 'selected' : '' ?>>
+                <?= $pm['namapeminjam'] ?>
+              </option>
+            <?php } ?>
+          </select>
         </div>
-        
-        <form action="db/dbpeminjaman.php?proses=edit" method="POST">
-            <div class="card-body">
-                
-                <input type="hidden" name="idpeminjaman" value="<?php echo htmlspecialchars($data['idpeminjaman']); ?>">
 
-                <div class="form-group">
-                    <label for="idpeminjam">Nama Peminjam</label>
-                    <select class="form-control" id="idpeminjam" name="idpeminjam" required>
-                        <?php 
-                        if ($res_peminjam) {
-                            while ($peminjam = mysqli_fetch_assoc($res_peminjam)) {
-                                $selected = ($peminjam['idpeminjam'] == $data['idpeminjam']) ? 'selected' : '';
-                                echo '<option value="' . htmlspecialchars($peminjam['idpeminjam']) . '" ' . $selected . '>' . htmlspecialchars($peminjam['namapeminjam']) . '</option>';
-                            }
-                        } else {
-                            echo '<option value="" disabled>Gagal memuat data Peminjam</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
+        <div class="form-group">
+          <label>Tanggal Pinjam</label>
+          <input type="date" name="tanggalpinjam" class="form-control" value="<?= $data['tanggalpinjam'] ?>" required>
+        </div>
 
-                <div class="form-group">
-                    <label for="idadmin">Nama Admin</label>
-                    <select class="form-control" id="idadmin" name="idadmin" required>
-                        <?php 
-                        if ($res_admin) {
-                            while ($admin = mysqli_fetch_assoc($res_admin)) {
-                                $selected = ($admin['idadmin'] == $data['idadmin']) ? 'selected' : '';
-                                echo '<option value="' . htmlspecialchars($admin['idadmin']) . '" ' . $selected . '>' . htmlspecialchars($admin['nama']) . '</option>';
-                            }
-                        } else {
-                             echo '<option value="" disabled>Gagal memuat data Admin</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="tanggalpinjam">Tanggal Pinjam</label>
-                    <input type="date" class="form-control" id="tanggalpinjam" name="tanggalpinjam" 
-                           value="<?php echo htmlspecialchars($data['tanggalpinjam']); ?>" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="tanggalkembali">Tanggal Kembali</label>
-                    <input type="date" class="form-control" id="tanggalkembali" name="tanggalkembali" 
-                           value="<?php echo htmlspecialchars($data['tanggalkembali']); ?>">
-                    <small class="form-text text-muted">Kosongkan jika buku belum dikembalikan.</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="statuspeminjaman">Status Peminjaman</label>
-                    <select class="form-control" id="statuspeminjaman" name="statuspeminjaman" required>
-                        <?php 
-                        $status_options = ['Dipinjam', 'Selesai'];
-                        foreach ($status_options as $status) {
-                            $selected = ($status == $data['statuspeminjaman']) ? 'selected' : '';
-                            echo '<option value="' . $status . '" ' . $selected . '>' . $status . '</option>';
-                        }
-                        ?>
-                    </select>
-                </div>
-
-            </div>
-            <div class="card-footer">
-                <button type="submit" class="btn btn-warning">
-                    <i class="fas fa-save me-1"></i> Simpan Perubahan
-                </button>
-                <a href="index.php?halaman=datapeminjaman" class="btn btn-secondary">
-                    <i class="fas fa-times me-1"></i> Batal
-                </a>
-            </div>
-        </form>
+        <div class="form-group">
+          <label>Tanggal Harus Kembali</label>
+          <input type="date" name="tanggalharuskembali" class="form-control" value="<?= $data['tanggalharuskembali'] ?>" required>
+        </div>
+      </div>
     </div>
+
+    <div class="card mt-3">
+      <div class="card-header bg-success text-white">
+        <h3 class="card-title">Daftar Buku yang Dipinjam</h3>
+      </div>
+      <div class="card-body">
+        <table class="table table-bordered" id="tabelBuku">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Judul Buku</th>
+              <th>Jumlah</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php $no=1; while ($d = mysqli_fetch_assoc($detail)) { ?>
+            <tr>
+              <td><?= $no++ ?></td>
+              <td>
+                <select name="idbuku[]" class="form-control" required>
+                  <option value="">-- Pilih Buku --</option>
+                  <?php 
+                  mysqli_data_seek($buku, 0); // reset pointer
+                  while ($bk = mysqli_fetch_assoc($buku)) { ?>
+                    <option value="<?= $bk['idbuku'] ?>" 
+                      <?= ($bk['idbuku'] == $d['idbuku']) ? 'selected' : '' ?>>
+                      <?= $bk['judulbuku'] ?>
+                    </option>
+                  <?php } ?>
+                </select>
+              </td>
+              <td><input type="number" name="jumlah[]" class="form-control" min="1" value="<?= $d['total'] ?>" required></td>
+              <td><button type="button" class="btn btn-danger btn-sm" onclick="hapusBaris(this)">Hapus</button></td>
+            </tr>
+            <?php } ?>
+          </tbody>
+        </table>
+        <button type="button" class="btn btn-info" onclick="tambahBaris()">+ Tambah Buku</button>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+      <a href="../index.php?halaman=daftarpeminjaman" class="btn btn-secondary">Batal</a>
+    </div>
+  </form>
+</div>
 </section>
+
+<script>
+function tambahBaris() {
+  const table = document.getElementById("tabelBuku").getElementsByTagName('tbody')[0];
+  const row = table.insertRow();
+  row.innerHTML = `
+    <td>#</td>
+    <td>
+      <select name="idbuku[]" class="form-control" required>
+        <option value="">-- Pilih Buku --</option>
+        <?php 
+        $buku_reset = mysqli_query($koneksi, "SELECT * FROM buku ORDER BY judulbuku ASC");
+        while ($bk = mysqli_fetch_assoc($buku_reset)) { ?>
+          <option value="<?= $bk['idbuku'] ?>"><?= $bk['judulbuku'] ?></option>
+        <?php } ?>
+      </select>
+    </td>
+    <td><input type="number" name="jumlah[]" class="form-control" min="1" required></td>
+    <td><button type="button" class="btn btn-danger btn-sm" onclick="hapusBaris(this)">Hapus</button></td>
+  `;
+}
+
+function hapusBaris(btn) {
+  btn.closest('tr').remove();
+}
+</script>
